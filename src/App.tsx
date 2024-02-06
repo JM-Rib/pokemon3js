@@ -1,16 +1,17 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment, OrbitControls } from "@react-three/drei";
-import Model from './Model.tsx';
+import ModelLoader from './utils/ModelLoader.tsx';
+import World from "./world/World.tsx";
 
 const App: React.FC = () => {
   return (
     <Canvas style={{ width: '100%', height: '100vh' }}>
       <Suspense fallback={null}>
-        <Model modelPath="monster.glb" y="2"/>
-        <Model modelPath="island.glb" />
+
+        <World/>
         <OrbitControls />
-        <Environment preset="sunset" background />
+
       </Suspense>
     </Canvas>
   );
