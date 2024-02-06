@@ -7,7 +7,7 @@ const App: React.FC = () => {
   return (
     <Canvas style={{ width: '100%', height: '100vh' }}>
       <Suspense fallback={null}>
-        <Model modelPath="monster.glb" />
+        <Model modelPath="monster.glb" y="2"/>
         <Model modelPath="island.glb" />
         <OrbitControls />
         <Environment preset="sunset" background />
