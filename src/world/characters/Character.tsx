@@ -10,6 +10,7 @@ const Character = () => {
     useFrame(() => {
         if (CharacterRef.current)
             CharacterRef.current.rotation.y += 0.01;
+            CharacterRef.current.position.y = Math.sin(0.01 * Date.now());
     });
 
     useEffect(() => {
