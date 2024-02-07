@@ -1,9 +1,8 @@
 import ModelLoader from "../../utils/ModelLoader.tsx";
 import React, { useEffect, useRef } from "react";
 import {usePlane} from "@react-three/cannon";
-import {Plane, RandomizedLight, SpotLight} from "@react-three/drei";
+import {Plane} from "@react-three/drei";
 import {DoubleSide} from "three";
-import {useFrame} from "@react-three/fiber";
 
 const Map = () => {
     const [ref] = usePlane(() => ({
@@ -12,10 +11,6 @@ const Map = () => {
         rotation: [-Math.PI/2, 0, 0],
         shape: undefined
     }));
-
-    useFrame(() => {
-        ref.current.rotation.x += 0.01;
-    });
 
 
     return (

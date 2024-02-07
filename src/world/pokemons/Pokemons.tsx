@@ -1,5 +1,5 @@
 import ModelLoader from "../../utils/ModelLoader.tsx";
-import React, {useRef} from "react";
+import React from "react";
 import {useBox} from "@react-three/cannon";
 
 const Pokemons = () => {
@@ -7,7 +7,7 @@ const Pokemons = () => {
 
     return (
         <>
-            <ModelLoader modelPath="monster.glb" ref={ref}  />
+            <ModelLoader modelPath="monster.glb" ref={ref} />
         </>
     );
 }
