@@ -10,7 +10,6 @@ const App: React.FC = () => {
       <Suspense fallback={null}>
 
         <World/>
-        <OrbitControls />
 
       </Suspense>
     </Canvas>
