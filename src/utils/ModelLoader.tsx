@@ -1,10 +1,17 @@
-import React from 'react';
-import { useLoader } from '@react-three/fiber';
+import React, {MutableRefObject, useEffect, useRef} from 'react';
+import { useLoader, useFrame } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
-const ModelLoader: React.FC<{ modelPath: string, x?: Int16Array, y?: Int16Array, z?: Int16Array}> = ({ modelPath, x = 0, y = 0, z = 0 }) => {
+const ModelLoader: React.FC<{ modelPath: string, x?: Int16Array, y?: Int16Array, z?: Int16Array, meshRef: MutableRefObject<any> }> = ({ modelPath, x = 0, y = 0, z = 0, meshRef }) => {
   const gltf = useLoader(GLTFLoader, modelPath);
-  return <primitive object={gltf.scene} position={[x, y, z]}  />;
+  const internalMeshRef = useRef();
+
+  useEffect(() => {
+    if (meshRef)
+      meshRef.current = internalMeshRef.current;
+  }, [meshRef]);
+
+  return <primitive ref={internalMeshRef} object={gltf.scene} position={[x, y, z]}  />;
 };
 
 export default ModelLoader;
