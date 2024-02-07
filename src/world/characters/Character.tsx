@@ -2,6 +2,7 @@ import ModelLoader from "../../utils/ModelLoader.tsx";
 import React, { useEffect, useRef } from "react";
 import { useBox } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
+import Controls from "./Controls.tsx";
 
 const Character = () => {
     const [ref] = useBox(() => ({ 
@@ -11,14 +12,15 @@ const Character = () => {
         rotation: [0, 0, 0], 
     }));
 
-    useFrame(() => {
+    useFrame((state, delta) => {
+        // Faites tourner la boîte de collision ici
+        api.rotation.set(0, Math.sin(state.clock.elapsedTime) * 0.5, 0);
     });
-
 
     return (
         <>
             <ModelLoader modelPath="characters.glb" ref={ref} physicsProps={{ ref }} />
-            {/* Utilisez meshRef.current ici */}
+            <Controls characterApi={api} />
         </>
     );
 }
