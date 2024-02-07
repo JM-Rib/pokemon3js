@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import Controls from "./Controls.tsx";
 
 const Character = () => {
-    const [ref] = useBox(() => ({ 
+    const [ref, api] = useBox(() => ({
         mass: 1, 
         collisionFilterGroup: 1, 
         position: [0, 0, 0], //Permet que le perso tombe droit
@@ -14,7 +14,7 @@ const Character = () => {
 
     useFrame((state, delta) => {
         // Faites tourner la boîte de collision ici
-        api.rotation.set(0, Math.sin(state.clock.elapsedTime) * 0.5, 0);
+        //zapi.rotation.set(0, Math.sin(state.clock.elapsedTime) * 0.5, 0);
     });
 
     return (
