@@ -22,7 +22,7 @@ const Character = () => {
     return (
         <>
             <ModelLoader modelPath="characters.glb" ref={ref} physicsProps={{ ref }} />
-            {/* Utilisez meshRef.current ici */}
+            <Controls characterApi={api} />
         </>
     );
 }
