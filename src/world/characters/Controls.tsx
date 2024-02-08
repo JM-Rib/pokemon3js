@@ -64,22 +64,24 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
         const distance = characterPosition.distanceTo(yaw.position);
 
 
-        //let invertedYawPosition = new Vector3(-yaw.position.x, yaw.position.y, -yaw.position.z);
         rotationMatrix.lookAt(worldPosition, yaw.position, characterRef.current.up);
+        // Create a rotation matrix that inverts the Y rotation by Math.PI radians
+        // Apply the inversion to the rotation matrix
         targetQuaternion.setFromRotationMatrix(rotationMatrix);
-        console.log(distance);
+
 
         if (distance > 0.0001 && !characterRef.current.quaternion.equals(targetQuaternion)) {
             targetQuaternion.z = 0;
             targetQuaternion.x = 0;
 
+            if (delta > 0.0001) {
 
-            targetQuaternion.normalize();
-            characterRef.current.quaternion.rotateTowards(yaw.quaternion, delta* 20);
-            let invertedQuaternion = new Quaternion(-characterRef.current.quaternion.x, -characterRef.current.quaternion.y, -characterRef.current.quaternion.z, -characterRef.current.quaternion.w);
-            characterApi.quaternion.copy(invertedQuaternion);
-            //inverse le characterRef.current.quaternion
-
+                targetQuaternion.normalize();
+                characterRef.current.quaternion.rotateTowards(yaw.quaternion, -delta*3);
+                let invertedQuaternion = new Quaternion(characterRef.current.quaternion.x, characterRef.current.quaternion.y, characterRef.current.quaternion.z, characterRef.current.quaternion.w);
+                characterApi.quaternion.copy(invertedQuaternion);
+                //inverse le characterRef.current.quaternion
+            }
             //characterApi.rotation.set(0, characterRef.current.rotation.y * 10, 0);
         }
 
