@@ -7,7 +7,9 @@ import Controls from "./Controls.tsx";
 import {Vector3} from "three"; // Import the useFollowCam hook
 
 const Character = () => {
-    const worldPosition = useMemo(() => new Vector3(), []);
+    const contactNormal = useMemo(() => new Vector3(0, 0, 0), []);
+    const playerGrounded = useRef(false);
+    const inJumpAction = useRef(false);
     useContactMaterial('ground', 'slippery', {
         friction: 0,
         restitution: 0.01,
@@ -22,6 +24,15 @@ const Character = () => {
             { args: [0.25], position: [0, 1.25, 0], type: 'Sphere' }
         ],
         onCollide: (e) => {
+            if (e.contact.bi.id !== e.body.id){
+                contactNormal.set(e.contact.ni[0], e.contact.ni[1], e.contact.ni[2]);
+            }
+            if (contactNormal.dot(new Vector3(0,-1,0)) > 0.5) {
+                console.log('grounded');
+                playerGrounded.current = true;
+                inJumpAction.current = false;
+                console.log(playerGrounded.current);
+            }
         },
         material: 'slippery',
         linearDamping: 0,
@@ -32,17 +43,15 @@ const Character = () => {
     const { pivot, alt, yaw, pitch } = useFollowCam(ref, [0, 1, 1.5]); // Call the useFollowCam hook
 
     useFrame(({raycaster}, delta) => {
-        //
-        ref.current.getWorldPosition(worldPosition);
-        //api.linearDamping.set(0.9999999);
+
     });
 
     return (
         <>
             <Suspense fallback={null}>
-                <ModelLoader modelPath="characters.glb" ref={ref} physicsProps={{ ref }} />
+                <ModelLoader modelPath="monster.glb" ref={ref} physicsProps={{ ref }} />
             </Suspense>
-            <Controls characterApi={api} yaw={yaw} />
+            <Controls characterApi={api} yaw={yaw} characterRef={ref} playerGrounded={playerGrounded} inJumpAction={inJumpAction} />
         </>
     );
 }
