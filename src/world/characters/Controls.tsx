@@ -1,21 +1,25 @@
-import {MutableRefObject, useRef} from "react";
+import {MutableRefObject, useMemo, useRef} from "react";
 import {useKeyboardControls, KeyboardControls} from "../../utils/useKeyboardControls.tsx";
 import {useFrame} from "@react-three/fiber";
 import {PublicApi} from "@react-three/cannon";
 import character from "./Character";
+import {Euler, Object3D, Quaternion, Vector3} from "three";
 
 interface ControlsProps {
     characterApi: PublicApi;
+    yaw: Object3D;
 }
 
 
-const Controls = ({characterApi}: ControlsProps) => {
+const Controls = ({characterApi, yaw}: ControlsProps) => {
     const moveSpeed = 1;
     const jumpForce = 10;
+    const velocity = useMemo(() => new Vector3(), []);
+    const inputVelocity = useMemo(() => new Vector3(), []);
+    const euler = useMemo(() => new Euler(), []); // Rotation en coordonnées d'Euler
+    const quat = useMemo(() => new Quaternion(), []);
 
     const controls: KeyboardControls = useKeyboardControls();
-
-    const velocity = useRef([0, 0, 0]);
 
     useFrame(({ clock }) => {
         const delta = clock.getDelta(); // Delta time
@@ -29,13 +33,15 @@ const Controls = ({characterApi}: ControlsProps) => {
         if (controls.moveLeft) direction[0] = -1;
         if (controls.moveRight) direction[0] = 1;
 
-        // Appliquer le déplacement sur l'objet physique
-        characterApi.velocity.set(direction[0],-10,direction[2]);
+        inputVelocity.z = direction[2] * speed;
+        inputVelocity.x = direction[0] * speed;
+        inputVelocity.setLength(0.7);
 
-        //quand le personnage n'est pas immobile
-        if (direction[0] !== 0 || direction[2] !== 0) {
-            characterApi.velocity.set(direction[0],0.1,direction[2]);
-        }
+        euler.y = yaw.rotation.y;
+        quat.setFromEuler(euler);
+        inputVelocity.applyQuaternion(quat);
+        velocity.set(inputVelocity.x, -10, inputVelocity.z);
+        characterApi.applyImpulse([velocity.x, velocity.y, velocity.z], [0, 0, 0]);
 
         console.log(direction)
         // Saut
