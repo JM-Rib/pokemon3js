@@ -12,6 +12,7 @@
 /build
 
 *.glb
+*.zip
 # misc
 .DS_Store
 .env.local
