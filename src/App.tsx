@@ -6,7 +6,7 @@ import World from "./world/World.tsx";
 
 const App: React.FC = () => {
   return (
-    <Canvas style={{ width: '100%', height: '100vh' }}>
+    <Canvas style={{ width: '100%', height: '100vh' }} onPointerDown={(e) => e.target.requestPointerLock()}>
       <Suspense fallback={null}>
 
         <World/>
