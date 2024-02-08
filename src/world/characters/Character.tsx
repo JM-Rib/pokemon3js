@@ -1,11 +1,12 @@
 import ModelLoader from "../../utils/ModelLoader.tsx";
-import React, { useEffect, useRef } from "react";
+import React, {Suspense, useEffect, useRef} from "react";
 import { useBox } from "@react-three/cannon";
 import { useFrame,  useThree } from "@react-three/fiber";
-import useFollowCam from "../../utils/useFollowCam.tsx"; // Import the useFollowCam hook
+import useFollowCam from "../../utils/useFollowCam.tsx";
+import Controls from "./Controls.tsx"; // Import the useFollowCam hook
 
 const Character = () => {
-    const [ref] = useBox(() => ({ 
+    const [ref, api] = useBox(() => ({
         mass: 1, 
         collisionFilterGroup: 1, 
         position: [0, 0, 0], //Permet que le perso tombe droit
@@ -21,7 +22,9 @@ const Character = () => {
 
     return (
         <>
-            <ModelLoader modelPath="characters.glb" ref={ref} physicsProps={{ ref }} />
+            <Suspense fallback={null}>
+                <ModelLoader modelPath="characters.glb" ref={ref} physicsProps={{ ref }} />
+            </Suspense>
             <Controls characterApi={api} />
         </>
     );
