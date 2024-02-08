@@ -5,12 +5,7 @@ import {Plane} from "@react-three/drei";
 import {DoubleSide} from "three";
 
 const Map = () => {
-    const [ref] = usePlane(() => ({
-        position: [0, -4, 0],
-        collisionFilterGroup: 1,
-        rotation: [-Math.PI/2, 0, 0],
-        shape: undefined
-    }));
+    const [ref] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], material: 'ground' }), useRef())
 
 
     return (
