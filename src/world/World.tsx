@@ -16,7 +16,6 @@ const World = () => {
                   <Character/>
               </ToggleDebug>
                 <Environment preset="sunset" background/>
-                <Pokemons/>
 
               </Physics>
 
