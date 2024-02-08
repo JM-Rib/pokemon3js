@@ -32,8 +32,9 @@ const Character = () => {
     const { pivot, alt, yaw, pitch } = useFollowCam(ref, [0, 1, 1.5]); // Call the useFollowCam hook
 
     useFrame(({raycaster}, delta) => {
-        api.angularFactor.set(0, 0, 0);
+        //
         ref.current.getWorldPosition(worldPosition);
+        //api.linearDamping.set(0.9999999);
     });
 
     return (
