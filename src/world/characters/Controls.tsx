@@ -4,6 +4,10 @@ import {useFrame} from "@react-three/fiber";
 import {PublicApi} from "@react-three/cannon";
 import character from "./Character";
 import {Euler, Matrix4, Object3D, Quaternion, Vector3} from "three";
+<<<<<<< HEAD
+=======
+import { Environment } from "@react-three/drei";
+>>>>>>> origin/master
 
 interface ControlsProps {
     characterApi: PublicApi;
