@@ -4,6 +4,7 @@ import {useFrame} from "@react-three/fiber";
 import {PublicApi} from "@react-three/cannon";
 import character from "./Character";
 import {Euler, Matrix4, Object3D, Quaternion, Vector3} from "three";
+import { Environment } from "@react-three/drei";
 
 interface ControlsProps {
     characterApi: PublicApi;
@@ -62,27 +63,27 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
         });
 
         const distance = characterPosition.distanceTo(yaw.position);
+        if(process.env.REACT_APP_CAMERA_CHIASSE !== 'false'){
+            rotationMatrix.lookAt(worldPosition, yaw.position, characterRef.current.up);
+            // Create a rotation matrix that inverts the Y rotation by Math.PI radians
+            // Apply the inversion to the rotation matrix
+            targetQuaternion.setFromRotationMatrix(rotationMatrix);
 
 
-        rotationMatrix.lookAt(worldPosition, yaw.position, characterRef.current.up);
-        // Create a rotation matrix that inverts the Y rotation by Math.PI radians
-        // Apply the inversion to the rotation matrix
-        targetQuaternion.setFromRotationMatrix(rotationMatrix);
+            if (distance > 0.0001 && !characterRef.current.quaternion.equals(targetQuaternion)) {
+                targetQuaternion.z = 0;
+                targetQuaternion.x = 0;
 
+                if (delta > 0.0001) {
 
-        if (distance > 0.0001 && !characterRef.current.quaternion.equals(targetQuaternion)) {
-            targetQuaternion.z = 0;
-            targetQuaternion.x = 0;
-
-            if (delta > 0.0001) {
-
-                targetQuaternion.normalize();
-                characterRef.current.quaternion.rotateTowards(yaw.quaternion, -delta*3);
-                let invertedQuaternion = new Quaternion(characterRef.current.quaternion.x, characterRef.current.quaternion.y, characterRef.current.quaternion.z, characterRef.current.quaternion.w);
-                characterApi.quaternion.copy(invertedQuaternion);
-                //inverse le characterRef.current.quaternion
+                    targetQuaternion.normalize();
+                    characterRef.current.quaternion.rotateTowards(yaw.quaternion, -delta*3);
+                    let invertedQuaternion = new Quaternion(characterRef.current.quaternion.x, characterRef.current.quaternion.y, characterRef.current.quaternion.z, characterRef.current.quaternion.w);
+                    characterApi.quaternion.copy(invertedQuaternion);
+                    //inverse le characterRef.current.quaternion
+                }
+                //characterApi.rotation.set(0, characterRef.current.rotation.y * 10, 0);
             }
-            //characterApi.rotation.set(0, characterRef.current.rotation.y * 10, 0);
         }
 
 
