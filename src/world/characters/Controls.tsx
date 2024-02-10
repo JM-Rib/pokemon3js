@@ -16,8 +16,7 @@ interface ControlsProps {
 
 const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction}: ControlsProps) => {
     const moveSpeed = 2;
-    const jumpForce = 0.05;
-    const worldPosition = useMemo(() => new Vector3(), []);
+    const jumpForce = 6;
     const characterPosition = useMemo(() => new Vector3(), []);
     const velocity = useMemo(() => new Vector3(), []);
     const inputVelocity = useMemo(() => new Vector3(), []);
@@ -33,61 +32,41 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
 
 
     useFrame(({ clock, raycaster }, delta) => {
-        let ativeAction = 0;
-        // Calcul de la nouvelle position en fonction des contrôles clavier
-        const speed = moveSpeed * delta;
-        const direction = [0, 0, 0];
-
-        characterApi.angularFactor.set(0, 0, 0);
-        characterRef.current.getWorldPosition(worldPosition);
-        previousPosition.current.copy(worldPosition);
-
-        //playerGrounded.current = false;
-        raycasterOffset.copy(worldPosition);
-        raycasterOffset.y += 0.01;
-        raycaster.set(raycasterOffset, new Vector3(0, -1, 0));
-
-
-        if (!playerGrounded.current) {
-            characterApi.linearDamping.set(0);
-        }else {
-            characterApi.linearDamping.set(0.999999);
-        }
-
-        const unsubscribe = characterApi.position.subscribe((newValue) => {
-            //characterRef.current.position.set(newValue[0], newValue[1], newValue[2]);
-            characterPosition.x = newValue[0];
-            characterPosition.y = newValue[1];
-            characterPosition.z = newValue[2];
-        });
-
-        const distance = characterPosition.distanceTo(yaw.position);
-
-
-        rotationMatrix.lookAt(worldPosition, yaw.position, characterRef.current.up);
-        // Create a rotation matrix that inverts the Y rotation by Math.PI radians
-        // Apply the inversion to the rotation matrix
-        targetQuaternion.setFromRotationMatrix(rotationMatrix);
-
-
-        if (distance > 0.0001 && !characterRef.current.quaternion.equals(targetQuaternion)) {
-            targetQuaternion.z = 0;
-            targetQuaternion.x = 0;
-
-            if (delta > 0.0001) {
-
-                targetQuaternion.normalize();
-                characterRef.current.quaternion.rotateTowards(yaw.quaternion, -delta*3);
-                let invertedQuaternion = new Quaternion(characterRef.current.quaternion.x, characterRef.current.quaternion.y, characterRef.current.quaternion.z, characterRef.current.quaternion.w);
-                characterApi.quaternion.copy(invertedQuaternion);
-                //inverse le characterRef.current.quaternion
-            }
-            //characterApi.rotation.set(0, characterRef.current.rotation.y * 10, 0);
-        }
-
-
-
         if (document.pointerLockElement) {
+            let ativeAction = 0;
+            // Calcul de la nouvelle position en fonction des contrôles clavier
+            const speed = moveSpeed * delta;
+            const direction = [0, 0, 0];
+
+            characterApi.angularFactor.set(0, 0, 0);
+            characterRef.current.getWorldPosition(characterPosition);
+
+            //playerGrounded.current = false;
+            raycasterOffset.copy(characterPosition);
+            raycasterOffset.y += 0.01;
+            raycaster.set(raycasterOffset, new Vector3(0, -1, 0));
+
+            // Si le personnage est au sol, on lui applique un amortissement linéaire
+            if (!playerGrounded.current) {
+                characterApi.linearDamping.set(0);
+            }else {
+                characterApi.linearDamping.set(0.999999);
+            }
+
+            const distance = characterPosition.distanceTo(previousPosition.current);
+
+            // On calcule la rotation du personnage
+            rotationMatrix.lookAt(characterPosition, previousPosition.current, new Vector3(0, 1, 0));
+            targetQuaternion.setFromRotationMatrix(rotationMatrix);
+            if (distance > 0.0001 && !characterRef.current.quaternion.equals(targetQuaternion)) {
+                targetQuaternion.z = 0;
+                targetQuaternion.x = 0;
+                targetQuaternion.normalize();
+                targetQuaternion.rotateTowards(targetQuaternion, delta * 20);
+                characterApi.quaternion.copy(targetQuaternion);
+            }
+
+            // On calcule la vélocité du personnage
             inputVelocity.set(0,0,0);
             if (controls.moveForward) direction[2] = -10;
             if (controls.moveBackward) direction[2] = 10;
@@ -100,20 +79,23 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
             if (direction[0] !== 0 || direction[2] !== 0) {
                 ativeAction = 1;
             }
+            // On calcule la vélocité du saut
             if (controls.jump) {
                 if (playerGrounded.current && !inJumpAction.current){
                     ativeAction = 2;
                     inJumpAction.current = true;
-                    inputVelocity.y = 12;
+                    inputVelocity.y = jumpForce;
                     console.log('jump');
                 }
             }
 
+            // On applique la vélocité au personnage
             euler.y = yaw.rotation.y;
             quat.setFromEuler(euler);
             inputVelocity.applyQuaternion(quat);
             velocity.set(inputVelocity.x, inputVelocity.y, inputVelocity.z);
             characterApi.applyImpulse([velocity.x, velocity.y, velocity.z], [0, 0, 0]);
+            previousPosition.current.lerp(characterPosition, 0.3);
         }
     });
 

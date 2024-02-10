@@ -10,10 +10,10 @@ const World = () => {
   return (
       <>
 
-              <Physics gravity={[0, -10, 0]}>
+              <Physics>
               <ToggleDebug>
                 <Map/>
-                  <Character/>
+                <Character/>
               </ToggleDebug>
                 <Environment preset="sunset" background/>
 
