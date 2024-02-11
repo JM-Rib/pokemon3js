@@ -1,10 +1,10 @@
-import {MutableRefObject, useMemo, useRef} from "react";
+import {MutableRefObject, useEffect, useMemo, useRef} from "react";
 import {useKeyboardControls, KeyboardControls} from "../../utils/useKeyboardControls.tsx";
 import {useFrame} from "@react-three/fiber";
 import {PublicApi} from "@react-three/cannon";
 import character from "./Character";
-import {Euler, Matrix4, Object3D, Quaternion, Vector3} from "three";
-import { Environment } from "@react-three/drei";
+import {AnimationAction, AnimationClip, Euler, Matrix4, Object3D, Quaternion, Vector3} from "three";
+import {Environment, useAnimations} from "@react-three/drei";
 
 
 interface ControlsProps {
@@ -13,10 +13,12 @@ interface ControlsProps {
     yaw: Object3D;
     playerGrounded: MutableRefObject<boolean>;
     inJumpAction: MutableRefObject<boolean>;
+    actions: Array<AnimationAction>;
 }
 
 
-const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction}: ControlsProps) => {
+const Controls = (ControlsProps) => {
+    const { characterApi, characterRef, yaw, playerGrounded, inJumpAction, actions } = ControlsProps;
     const moveSpeed = 2;
     const jumpForce = 6;
     const characterPosition = useMemo(() => new Vector3(), []);
@@ -28,14 +30,18 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
     const rotationMatrix = useMemo(() => new Matrix4(), []);
     const targetQuaternion = useMemo(() => new Quaternion(), []);
     const previousPosition = useRef(new Vector3());
-
+    const prevActiveAction = useRef(0) // 0:idle, 1:walking, 2:jumping
     const controls: KeyboardControls = useKeyboardControls();
+
+    useEffect(() => {
+        console.log('actionsdsd', actions);
+    }, [actions]);
 
 
 
     useFrame(({ clock, raycaster }, delta) => {
         if (document.pointerLockElement) {
-            let ativeAction = 0;
+            let ativeAction = 0;// 0:idle, 1:walking, 2:jumping
             // Calcul de la nouvelle position en fonction des contrôles clavier
             const speed = moveSpeed * delta;
             const direction = [0, 0, 0];
@@ -70,16 +76,43 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
 
             // On calcule la vélocité du personnage
             inputVelocity.set(0,0,0);
-            if (controls.moveForward) direction[2] = -10;
-            if (controls.moveBackward) direction[2] = 10;
-            if (controls.moveLeft) direction[0] = -10;
-            if (controls.moveRight) direction[0] = 10;
+            if (controls.moveForward){
+                ativeAction = 1;
+                direction[2] = -10;
+                //actions['walking'].reset().play();
+            }
+            if (controls.moveBackward){
+                ativeAction = 1;
+                direction[2] = 10;
+                //actions['idle'].reset().fadeIn(0.5).play();
+            }
+            if (controls.moveLeft){
+                ativeAction = 1;
+                direction[0] = -10;
+                //actions['leftStrafWalking'].reset().fadeIn(0.5).play();
+            }
+            if (controls.moveRight){
+                ativeAction = 1;
+                direction[0] = 10;
+                //actions['rightStrafWalking'].reset().fadeIn(0.5).play();
+            }
 
             inputVelocity.z = direction[2] * speed;
             inputVelocity.x = direction[0] * speed;
 
-            if (direction[0] !== 0 || direction[2] !== 0) {
-                ativeAction = 1;
+            if (ativeAction !== prevActiveAction.current) {
+                //console.log('active action changed')
+                if (prevActiveAction.current !== 1 && ativeAction === 1) {
+                    //console.log('idle --> walking')
+                    actions['idle'].fadeOut(0.1)
+                    actions['walking'].reset().fadeIn(0.1).play()
+                }
+                if (prevActiveAction.current !== 0 && ativeAction === 0) {
+                    //console.log('walking --> idle')
+                    actions['walking'].fadeOut(0.1)
+                    actions['idle'].reset().fadeIn(0.1).play()
+                }
+                prevActiveAction.current = ativeAction;
             }
             // On calcule la vélocité du saut
             if (controls.jump) {
@@ -87,9 +120,12 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
                     ativeAction = 2;
                     inJumpAction.current = true;
                     inputVelocity.y = jumpForce;
-                    console.log('jump');
+                    actions['walking'].fadeOut(0.1)
+                    actions['idle'].fadeOut(0.1)
+                    actions['jump'].reset().fadeIn(0.5).play();
                 }
             }
+
 
             // On applique la vélocité au personnage
             euler.y = yaw.rotation.y;
