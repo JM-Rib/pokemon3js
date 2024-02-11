@@ -28,15 +28,13 @@ const Character = () => {
                 contactNormal.set(e.contact.ni[0], e.contact.ni[1], e.contact.ni[2]);
             }
             if (contactNormal.dot(new Vector3(0,-1,0)) > 0.5) {
-                console.log('grounded');
                 playerGrounded.current = true;
                 inJumpAction.current = false;
-                console.log(playerGrounded.current);
             }
         },
         material: 'slippery',
         linearDamping: 0,
-        position: [0, 2, 0]
+        position: [30, 2, 18]
     }));
 
     const { camera } = useThree(); // Get the camera from useThree hook

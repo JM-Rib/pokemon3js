@@ -16,7 +16,7 @@ interface ControlsProps {
 
 
 const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction}: ControlsProps) => {
-    const moveSpeed = 2;
+    const moveSpeed = 6;
     const jumpForce = 0.05;
     const worldPosition = useMemo(() => new Vector3(), []);
     const characterPosition = useMemo(() => new Vector3(), []);
