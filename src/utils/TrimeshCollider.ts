@@ -1,5 +1,4 @@
 import * as CANNON from 'cannon-es';
-import * as THREE from 'three';
 import * as Utils from './FunctionLibrary.ts';
 import {Object3D} from 'three';
 import { threeToCannon, ShapeType } from 'three-to-cannon';
@@ -42,9 +41,8 @@ export class TrimeshCollider implements ICollider
 			position: options.position,
 			quaternion: options.rotation,
 			shape: shape?.shape,
-			collisionFilterGroup: 1,
-			material: mat
 		});
+		// console.log(physBox);
 
 		physBox.material = mat;
 

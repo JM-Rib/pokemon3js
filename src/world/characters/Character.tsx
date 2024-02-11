@@ -34,7 +34,7 @@ const Character = () => {
         },
         material: 'slippery',
         linearDamping: 0,
-        position: [30, 2, 18]
+        position: [0, 4, 0]
     }));
 
     const { camera } = useThree(); // Get the camera from useThree hook

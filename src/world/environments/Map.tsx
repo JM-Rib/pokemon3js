@@ -1,60 +1,53 @@
-import React, { useEffect, useRef, useState } from "react";
-import {usePlane, useTrimesh, useCompoundBody} from "@react-three/cannon";
-import { useLoader, useFrame } from '@react-three/fiber';
+import React, { forwardRef, useEffect, useRef, useState } from "react";
+import {usePlane} from "@react-three/cannon";
+import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TrimeshCollider } from "../../utils/TrimeshCollider.ts";
-import { EdgesGeometry } from "three";
+import IslandParts from "./IslandParts.tsx";
 
-const Map = () => {
+const Map = forwardRef( (props, ref) => {
     const [refone] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], position: [0, -0.1, 0], material: 'ground' }), useRef());
-    const physObjectsRef = useRef<TrimeshCollider[]>([]);
-    const shapes = useRef<any[]>([]);
+    const [mesObjetsALaCon, setMesObjetsALaCon] = useState<any>([]);
+
+    interface ShapeObject {
+        vertices: Float32Array;
+        indices: Int16Array;
+    }
+    const shapes = useRef<ShapeObject[]>([]);
     
-    // const geometry = useMemo(() => new TorusGeometry(0.75, 0,1), [[0.75, 0,1]]);
     const gltf = useLoader(GLTFLoader, "island.glb");
-
-    // const findType = (object, type) => {
-    //     object.children.forEach((child) => {
-    //         if (child.type === type) {
-    //             console.log(child);
-    //         }
-    //         findType(child, type);
-    //     });
-    // };
-    // useEffect( () => {
-    //     findType(gltf.scene, "Mesh")
-    // }, []);
-
     useEffect(() => {
         gltf.scene.traverse((child) => {
             if(child.name === "FP_jog_islandao"){
                 child.traverse( (mesh) => {
                     if(mesh.type === "SkinnedMesh"){
                         let phys = new TrimeshCollider(mesh, {});
-                        physObjectsRef.current.push(phys.body);
-                        shapes.current.push(phys.body.shapes[0]);
+                        // physObjectsRef.current.push(phys.body);
+                        var referencement: ShapeObject = {
+                            vertices: phys.body.shapes[0].vertices,
+                            indices: phys.body.shapes[0].indices
+                        }
+                        shapes.current.push(referencement);
                     }
                 })
             }
         });
-        console.log(ref.current);
-        console.log(...physObjectsRef.current);
-    });
-    
-    const [ref] = useCompoundBody(
-        () => ({
-            mass: 0,
-            position,
-            shapes: shapes
-        }),
-        useRef()
-    )
+    }, []);
+
+    useEffect(() => {
+        setMesObjetsALaCon(shapes.current);
+    }, [shapes]);
 
     return (
         <>
-            <primitive object={gltf.scene} {...physObjectsRef.current} />
+            <primitive object={gltf.scene} />
+            {mesObjetsALaCon ? (mesObjetsALaCon.map((x, i) => (
+                <>
+                    <IslandParts key={i} indices={x.indices} vertices={x.vertices} /> 
+                </>
+            ))) : null} 
         </>
     )
-}
+});
 
 export default Map;
