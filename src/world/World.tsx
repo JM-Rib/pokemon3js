@@ -9,7 +9,6 @@ import ToggleDebug from "../utils/ToggleDebug.tsx";
 const World = () => {
   return (
       <>
-
               <Physics gravity={[0, -10, 0]}>
               <ToggleDebug>
                 <Map/>

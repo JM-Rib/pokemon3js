@@ -3,6 +3,7 @@ import {usePlane} from "@react-three/cannon";
 import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TrimeshCollider } from "../../utils/TrimeshCollider.ts";
+import { Convex } from "../../utils/Convex.ts";
 import IslandParts from "./IslandParts.tsx";
 
 const Map = forwardRef( (props, ref) => {
@@ -18,10 +19,11 @@ const Map = forwardRef( (props, ref) => {
     const gltf = useLoader(GLTFLoader, "island.glb");
     useEffect(() => {
         gltf.scene.traverse((child) => {
+            console.log(child.userData.physics);
             if(child.name === "FP_jog_islandao"){
                 child.traverse( (mesh) => {
-                    if(mesh.type === "SkinnedMesh"){
-                        let phys = new TrimeshCollider(mesh, {});
+                    if(mesh.userData.physics === "trimesh"){
+                        let phys = new Convex(mesh, {});
                         // physObjectsRef.current.push(phys.body);
                         var referencement: ShapeObject = {
                             vertices: phys.body.shapes[0].vertices,
@@ -29,6 +31,15 @@ const Map = forwardRef( (props, ref) => {
                         }
                         shapes.current.push(referencement);
                     }
+                    // if(mesh.userData.physics === "trimesh-r3f-conversion"){
+                    //     let phys = new TrimeshCollider(mesh, {});
+                    //     // physObjectsRef.current.push(phys.body);
+                    //     var referencement: ShapeObject = {
+                    //         vertices: phys.body.shapes[0].vertices,
+                    //         indices: phys.body.shapes[0].indices
+                    //     }
+                    //     shapes.current.push(referencement);
+                    // }
                 })
             }
         });

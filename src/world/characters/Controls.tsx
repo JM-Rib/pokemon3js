@@ -39,7 +39,9 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
         const speed = moveSpeed * delta;
         const direction = [0, 0, 0];
 
-        characterApi.angularFactor.set(0, 0, 0);
+        if(characterApi.angularFactor !== undefined ){
+            characterApi.angularFactor.set(0, 0, 0);
+        }
         characterRef.current.getWorldPosition(worldPosition);
         previousPosition.current.copy(worldPosition);
 
@@ -49,10 +51,12 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
         raycaster.set(raycasterOffset, new Vector3(0, -1, 0));
 
 
-        if (!playerGrounded.current) {
-            characterApi.linearDamping.set(0);
-        }else {
-            characterApi.linearDamping.set(0.999999);
+        if (characterApi.linearDamping !== undefined) {
+            if (!playerGrounded.current) {
+                characterApi.linearDamping.set(0);
+            }else {
+                characterApi.linearDamping.set(0.999999);
+            }
         }
 
         const unsubscribe = characterApi.position.subscribe((newValue) => {
