@@ -1,6 +1,8 @@
 import * as CANNON from 'cannon-es';
+import * as THREE from 'three';
 import * as Utils from './FunctionLibrary.ts';
-import {Object3D} from 'three';
+import {Object3D, Vector3} from 'three';
+import {Vec3} from 'cannon-es';
 import { threeToCannon, ShapeType } from 'three-to-cannon';
 
 export interface ICollider {
@@ -16,6 +18,11 @@ export class Convex implements ICollider
 
 	constructor(mesh, options)
     {
+        this.body = new CANNON.Body();
+        
+        console.log("----mesh----");
+        console.log(mesh);
+        
         this.mesh = mesh.clone();
 
         let defaults = {
@@ -30,19 +37,10 @@ export class Convex implements ICollider
         mat.friction = options.friction;
         // mat.restitution = 0.7;
 
+        const result: any = threeToCannon(mesh, {type: ShapeType.HULL});
 
-        let shape = new CANNON.ConvexPolyhedron({vertices: this.mesh.geometry.vertices, faces: this.mesh.geometry.faces});
-        shape.material = mat;
+        const {shape, offset, orientation} = result;
 
-        // Add phys sphere
-        let physBox = new CANNON.Body({
-            mass: options.mass,
-            position: options.position,
-            shape: shape
-        });
-
-        physBox.material = mat;
-
-        this.body = physBox;
+        this.body.addShape(shape, offset, orientation);
     }
 }

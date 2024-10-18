@@ -5,6 +5,7 @@ import {PublicApi} from "@react-three/cannon";
 import character from "./Character";
 import {Euler, Matrix4, Object3D, Quaternion, Vector3} from "three";
 import { Environment } from "@react-three/drei";
+import { logDOM } from "@testing-library/react";
 
 interface ControlsProps {
     characterApi: PublicApi;
@@ -39,9 +40,6 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
         const speed = moveSpeed * delta;
         const direction = [0, 0, 0];
 
-        if(characterApi.angularFactor !== undefined ){
-            characterApi.angularFactor.set(0, 0, 0);
-        }
         characterRef.current.getWorldPosition(worldPosition);
         previousPosition.current.copy(worldPosition);
 
@@ -50,13 +48,17 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
         raycasterOffset.y += 0.01;
         raycaster.set(raycasterOffset, new Vector3(0, -1, 0));
 
-
-        if (characterApi.linearDamping !== undefined) {
-            if (!playerGrounded.current) {
-                characterApi.linearDamping.set(0);
-            }else {
-                characterApi.linearDamping.set(0.999999);
+        try {
+            if (characterApi.linearDamping !== undefined) {
+                
+                if (!playerGrounded.current) {
+                    characterApi.linearDamping.set(0);
+                }else {
+                    characterApi.linearDamping.set(0.999999);
+                }
             }
+        } catch(err) {
+            console.log(err);
         }
 
         const unsubscribe = characterApi.position.subscribe((newValue) => {

@@ -1,47 +1,40 @@
-import React, { forwardRef, MutableRefObject, useEffect, useRef } from "react";
-import { Vector3 } from 'three';
+import React, { useRef } from "react";
 import { useConvexPolyhedron } from "@react-three/cannon";
+import * as THREE from 'three';
 
-interface ShapeObject {
-    vertices: Float32Array;
-    indices: Float32Array;
+interface Vec3 {
+  x: number;
+  y: number;
+  z: number;
 }
 
-declare type Triplet = [x: number, y: number, z: number];
-declare type VectorTypes = Vector3 | Triplet;
+interface ShapeObject {
+  vertices: Vec3[]; 
+  faces: number[][];
+}
 
-declare type ConvexPolyhedronArgs<V extends VectorTypes = VectorTypes> = [
-    vertices?: V[],
-    faces?: number[][],
-    normals?: V[],
-    axes?: V[],
-    boundingSphereRadius?: number
-];
+const IslandParts = ({ vertices, faces }: ShapeObject) => {
+  const threeVertices = vertices.map(v => new THREE.Vector3(v.x, v.y, v.z).clone());
 
-const IslandParts = (shapeConvex: ConvexPolyhedronArgs) => {
-    // Convert Float32Array to an array of Triplet
-    const verticesArray: Triplet[] = [];
-    for (let i = 0; i < shapeConvex[0]?.length; i += 3) {
-        verticesArray.push([shapeConvex[0][i], shapeConvex[0][i + 1], shapeConvex[0][i + 2]]);
-    }
+  console.log("Converted Vertices:", threeVertices);
+  console.log("Faces:", faces);
 
-    // Assuming the indices is an array of faces, convert Float32Array to number[][]
-    const indicesArray: number[][] = [];
-    for (let i = 0; i < shapeConvex[1]?.length; i += 3) {
-        indicesArray.push([
-            shapeConvex[1][i],
-            shapeConvex[1][i + 1],
-            shapeConvex[1][i + 2],
-        ]);
-    }
+  const [convexRef] = useConvexPolyhedron(() => ({
+    args: [threeVertices, faces], 
+    material: 'ground',
+    position: [0, 0, 0],
+  }), useRef<THREE.Mesh>(null));
 
-    const [convex] = useConvexPolyhedron(() => ({
-        args: [verticesArray, indicesArray], // Pass converted values
-        material: 'ground',
-        position: [0, 0, 0],
-    }), useRef());
+  faces.forEach((face, index) => {
+    console.log(`Face ${index}:`, face);
+    face.forEach(vertexIndex => {
+        console.log(`Vertex ${vertexIndex}:`, vertices[vertexIndex]);
+    });
+  });
 
-    return <mesh ref={convex} />;
+  console.log("Physics args:", { vertices: threeVertices, faces });
+
+  return <mesh ref={convexRef}></mesh>;
 };
 
 export default IslandParts;
