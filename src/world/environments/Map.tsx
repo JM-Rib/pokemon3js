@@ -1,47 +1,62 @@
 import React, { forwardRef, useEffect, useRef, useState } from "react";
-import {usePlane, useConvexPolyhedron} from "@react-three/cannon";
+import { usePlane, useConvexPolyhedron } from "@react-three/cannon";
 import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { TrimeshCollider } from "../../utils/TrimeshCollider.ts";
-import { Convex } from "../../utils/Convex.ts";
-import IslandParts from "./IslandParts.tsx";
-import { ConvexPolyhedron, Shape } from "cannon-es";
+import { Object3D } from "three";
 
-const Map = forwardRef( (props, ref) => {
-    const [refone] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], position: [0, -0.1, 0], material: 'ground' }), useRef());
-    const [mesObjetsALaCon, setMesObjetsALaCon] = useState<Shape[]>([]);
+// Define the ConvexMeshProps interface
+interface ConvexMeshProps {
+    mesh: any;
+}
 
-    interface ShapeObject {
-        vertices: Float32Array;
-        indices: Int16Array;
+// ConvexMesh component for applying physics
+const ConvexMesh = forwardRef<any, ConvexMeshProps>((props, ref) => {
+    const { mesh } = props;
+
+    // Convert flat array of vertices to an array of vectors
+    const vertices = [];
+    const positionArray = mesh.geometry.attributes.position.array;
+    for (let i = 0; i < positionArray.length; i += 3) {
+        vertices.push([positionArray[i], positionArray[i + 1], positionArray[i + 2]]);
     }
-    const shapes = useRef<Shape[]>([]);
-    
+
+    // Convert flat index array to an array of faces (triangles)
+    const faces = [];
+    const indexArray = mesh.geometry.index.array;
+    for (let i = 0; i < indexArray.length; i += 3) {
+        faces.push([indexArray[i], indexArray[i + 1], indexArray[i + 2]]);
+    }
+
+    // Use cannon's convex polyhedron shape
+    const [convexRef, api] = useConvexPolyhedron(() => ({
+        args: [vertices, faces],
+        position: [0, 0, 0],
+        rotation: [0, 0, 0],
+        mass: 1,
+    }));
+
+    return <mesh ref={convexRef} geometry={mesh.geometry} />;
+});
+
+// Map component for loading the island GLB and applying physics
+const Map = forwardRef((props, ref) => {
+    const [mesObjetsALaCon, setMesObjetsALaCon] = useState<Object3D[]>([]);
+    const shapes = useRef<Object3D[]>([]);
+
+    // Load the GLB file
     const gltf = useLoader(GLTFLoader, "island.glb");
+
     useEffect(() => {
         gltf.scene.traverse((child) => {
-            console.log(child.userData.physics);
-            if(child.name === "FP_jog_islandao"){
-                child.traverse( (mesh) => {
-                    if(mesh.userData.physics === "convex"){
-                        
-                        let phys = new Convex(mesh, {});
-
-                        shapes.current.push(phys.body.shapes[0]);
+            if (child.name === "FP_jog_islandao") {
+                child.traverse((mesh) => {
+                    if (mesh.userData.physics === "convex") {
+                        shapes.current.push(mesh);
                     }
-                    // if(mesh.userData.physics === "trimesh-r3f-conversion"){
-                    //     let phys = new TrimeshCollider(mesh, {});
-                    //     // physObjectsRef.current.push(phys.body);
-                    //     var referencement: ShapeObject = {
-                    //         vertices: phys.body.shapes[0].vertices,
-                    //         indices: phys.body.shapes[0].indices
-                    //     }
-                    //     shapes.current.push(referencement);
-                    // }
-                })
+                });
             }
         });
-    }, []);
+    }, [gltf]);
 
     useEffect(() => {
         setMesObjetsALaCon(shapes.current);
@@ -49,14 +64,13 @@ const Map = forwardRef( (props, ref) => {
 
     return (
         <>
-            <primitive object={gltf.scene} />
-            {mesObjetsALaCon ? (mesObjetsALaCon.map((x, i) => (
-                <>
-                    <IslandParts key={i} convex={x} faces={x.faces} vertices={x.vertices} /> 
-                </>
-            ))) : null} 
+            {gltf.scene && mesObjetsALaCon.map((child: any, i) => (
+                child?.geometry?.attributes !== undefined && (
+                    <ConvexMesh mesh={child} key={i} />
+                )
+            ))}
         </>
-    )
+    );
 });
 
 export default Map;
