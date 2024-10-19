@@ -52,21 +52,21 @@ const Controls = ({characterApi, yaw, characterRef, playerGrounded, inJumpAction
             if (characterApi.linearDamping !== undefined) {
                 
                 if (!playerGrounded.current) {
-                    // characterApi.linearDamping.set(0.0);
+                    characterApi.linearDamping.set(0.0);
                 }else {
-                    // characterApi.linearDamping.set(0.999999);
+                    characterApi.linearDamping.set(0.999999);
                 }
             }
         } catch(err) {
             console.log(err);
         }
 
-        //const unsubscribe = characterApi.position.subscribe((newValue) => {
-        //    //characterRef.current.position.set(newValue[0], newValue[1], newValue[2]);
-        //    characterPosition.x = newValue[0];
-        //    characterPosition.y = newValue[1];
-        //    characterPosition.z = newValue[2];
-        //});
+        const unsubscribe = characterApi.position.subscribe((newValue) => {
+            characterRef.current.position.set(newValue[0], newValue[1], newValue[2]);
+            characterPosition.x = newValue[0];
+            characterPosition.y = newValue[1];
+            characterPosition.z = newValue[2];
+        });
 
         const distance = characterPosition.distanceTo(yaw.position);
         if(process.env.REACT_APP_CAMERA_CHIASSE !== 'false'){

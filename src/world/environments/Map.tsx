@@ -12,6 +12,7 @@ interface ConvexMeshProps {
 // ConvexMesh component for applying physics
 const ConvexMesh = forwardRef<any, ConvexMeshProps>((props, ref) => {
     const { mesh } = props;
+    console.log(mesh);
 
     // Convert flat array of vertices to an array of vectors
     const vertices = [];
@@ -35,7 +36,7 @@ const ConvexMesh = forwardRef<any, ConvexMeshProps>((props, ref) => {
         mass: 1,
     }));
 
-    return <mesh ref={convexRef} geometry={mesh.geometry} />;
+    return <mesh ref={convexRef} geometry={mesh.geometry} material={mesh.material} />;
 });
 
 // Map component for loading the island GLB and applying physics
